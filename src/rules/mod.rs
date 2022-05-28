@@ -1,4 +1,53 @@
 //! Optimization rules.
+//!
+//! A rule defines equivalent transformation of query plan. There are three kinds of rules:
+//!
+//! 1. Rewrite rule. It produces a transformation which is assumed to be better than original
+//! plan. For example, [`RemoveLimitRule`] which removes unnecessary limit.
+//! 2. Exploration rule. It produces equivalent alternative logical plan, which is used in the
+//! exploration phase of optimizer. For example, [`CommutateJoinRule`] just swaps the inputs of
+//! inner join with eq condition.
+//! 3. Implementation rule. It transforms logical operator to physical operator to provide
+//! physical implementation. For example, [`Join2HashJoinRule`] transforms inner join to hash join.
+//!
+//! ## Pattern
+//!
+//! A patten defines what expression the rule should operate on. With pattern definition, the
+//! rule can avoid manipulating plan directly. This has several advantages:
+//!
+//! 1. Decouple rule and concrete optimizer implementation. This way we can apply rule to both
+//! heuristic optimizer and cascades optimizer.
+//! 2. Decouple rule application and iteration. This scan significantly simplify rule
+//! implementation, since rule should only care about defining equivalent transformations.
+//!
+//! Let use the [`RemoveLimitRule`] to illustrate, its pattern is defined as following:
+//! ```no
+//! static ref REMOVE_LIMIT_RULE_PATTERN: Pattern = {
+//!     pattern(|op| matches!(op, Logical(LogicalLimit(_))))
+//!         .leaf(|op| matches!(op, Logical(LogicalLimit(_))))
+//!     .finish()
+//!};
+//! ```
+//!
+//! When [`RemoveLimitRule`] is invoked by optimizer, its input/output is [`OptExpression`]
+//! rather plan.
+//!```no
+//! [GroupExprId(0, 0) Limit(10)]                             [Operator Limit(5)]
+//!              |                                                     |
+//!              |                                                     |
+//!              |                   RemoveLimitRule                   |
+//! [GroupExprId(1, 0) Limit(5)]        -------->                 [GroupId (2)]
+//!              |
+//!              |
+//!              |
+//!         [GroupId(2)]
+//!
+//! ```
+//!
+//! Instead of manipulating plan directly, the optimizer generates [`OptExpression`] using rule's
+//! pattern, and the rule generates equivalent transformation. Optimizer uses generated
+//! transformation to manipulate internal plan representation, e.g. memo in cascades optimizer or
+//! graph in heuristic optimizer.
 mod pattern;
 pub use pattern::*;
 mod limit_push_down;
@@ -110,7 +159,9 @@ impl<O: Optimizer> OptExpression<O> {
 
     pub fn get_operator<'a>(&'a self, optimizer: &'a O) -> OptResult<&'a Operator> {
         match &self.node {
-            ExprHandleNode(opt_node) => Ok(optimizer.expr_at(opt_node.clone()).operator()),
+            ExprHandleNode(opt_node) => {
+                Ok(optimizer.expr_at(opt_node.clone()).operator())
+            }
             OperatorNode(op) => Ok(op),
             _ => bail!("Can't get operator from group handle!"),
         }
@@ -258,12 +309,12 @@ mod tests {
 
     #[test]
     fn test_opt_expr_operator_format() {
-        let tb1 = OptExpression::<CascadesOptimizer>::from(Logical(LogicalScan(TableScan::new(
-            "t1".to_string(),
-        ))));
-        let tb2 = OptExpression::<CascadesOptimizer>::from(Logical(LogicalScan(TableScan::new(
-            "t2".to_string(),
-        ))));
+        let tb1 = OptExpression::<CascadesOptimizer>::from(Logical(LogicalScan(
+            TableScan::new("t1".to_string()),
+        )));
+        let tb2 = OptExpression::<CascadesOptimizer>::from(Logical(LogicalScan(
+            TableScan::new("t2".to_string()),
+        )));
         let opt_expr = OptExpression::<CascadesOptimizer>::with_operator(
             Logical(LogicalLimit(Limit::new(1))),
             vec![tb1, tb2],
@@ -274,12 +325,12 @@ mod tests {
 
     #[test]
     fn test_opt_expr_group_expr_format() {
-        let tb1 = OptExpression::<CascadesOptimizer>::from(Logical(LogicalScan(TableScan::new(
-            "t1".to_string(),
-        ))));
-        let tb2 = OptExpression::<CascadesOptimizer>::from(Logical(LogicalScan(TableScan::new(
-            "t2".to_string(),
-        ))));
+        let tb1 = OptExpression::<CascadesOptimizer>::from(Logical(LogicalScan(
+            TableScan::new("t1".to_string()),
+        )));
+        let tb2 = OptExpression::<CascadesOptimizer>::from(Logical(LogicalScan(
+            TableScan::new("t2".to_string()),
+        )));
         let opt_expr = OptExpression::<CascadesOptimizer>::with_expr_handle(
             GroupExprId::new(GroupId(10), 4),
             vec![tb1, tb2],

@@ -1,3 +1,8 @@
+//! Contains relational operators such as join, projection, limit, etc.
+//!
+//! Currently they are classified into two categories: logical and physical. We separate logical
+//! and physical operators in two enums since they need to implement different traits. For
+//! example, physical operators should implement trait for deriving cost and statistics.
 mod logical;
 pub use logical::*;
 mod physical;

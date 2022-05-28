@@ -1,4 +1,8 @@
 //! Properties of relation operators.
+//!
+//! Currently we have two kinds of properties: [`LogicalProperty`] and [`PhysicalPropertySet`].
+//! Logical property are things shared by logically equivalent plans, such as schema, key.
+//! Physical properties are concerned with sorting, distribution, etc.
 
 mod distribution;
 
