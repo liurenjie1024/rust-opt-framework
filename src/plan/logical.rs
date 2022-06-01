@@ -42,8 +42,8 @@ impl LogicalPlanBuilder {
         self.reset_root(plan_node)
     }
 
-    pub fn projection(&mut self, expr: Expr) -> &mut Self {
-        let projection = Projection::new(expr);
+    pub fn projection<I: IntoIterator<Item = Expr>>(&mut self, exprs: I) -> &mut Self {
+        let projection = Projection::new(exprs);
         let plan_node = Rc::new(PlanNode::new(
             self.next_plan_node_id,
             Logical(LogicalProjection(projection)),

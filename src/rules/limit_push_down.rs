@@ -186,7 +186,7 @@ mod tests {
         let original_plan = LogicalPlanBuilder::new()
             .scan(None, "t1".to_string())
             .limit(5)
-            .projection(col("c1"))
+            .projection(vec![col("c1")] )
             .limit(10)
             .build();
 
@@ -204,7 +204,7 @@ mod tests {
         let optimized_plan = optimizer.find_best_plan().unwrap();
         let expected_plan = LogicalPlanBuilder::new()
             .scan(Some(5), "t1".to_string())
-            .projection(col("c1"))
+            .projection(vec![col("c1")] )
             .build();
 
         assert_eq!(optimized_plan, expected_plan);
@@ -215,7 +215,7 @@ mod tests {
         let original_plan = LogicalPlanBuilder::new()
             .scan(None, "t1".to_string())
             .limit(5)
-            .projection(col("c1"))
+            .projection(vec![col("c1")] )
             .limit(10)
             .build();
 

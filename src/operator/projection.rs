@@ -7,12 +7,12 @@ use crate::optimizer::Optimizer;
 
 #[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub struct Projection {
-    expr: Expr,
+    expr: Vec<Expr>,
 }
 
 impl Projection {
-    pub fn new(expr: Expr) -> Self {
-        Self { expr }
+    pub fn new<I: IntoIterator<Item = Expr>>(exprs: I) -> Self {
+        Self { expr: exprs.into_iter().collect() }
     }
 }
 

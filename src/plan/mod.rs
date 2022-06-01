@@ -16,6 +16,22 @@ pub type PlanNodeId = u32;
 
 pub type PlanNodeRef = Rc<PlanNode>;
 
+pub struct PlanNodeIdGen {
+    next: PlanNodeId
+}
+
+impl PlanNodeIdGen {
+    pub fn new() -> Self {
+        Self {
+            next: 0
+        }
+    }
+    pub fn next(&mut self) -> PlanNodeId {
+        self.next += 1;
+        self.next
+    }
+}
+
 /// One node in a plan.
 ///
 /// This is used in both input and output of an optimizer. Given that we may have many different

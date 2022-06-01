@@ -57,3 +57,4 @@ pub mod plan;
 pub mod properties;
 pub mod rules;
 pub mod stat;
+pub mod datafusion_poc;

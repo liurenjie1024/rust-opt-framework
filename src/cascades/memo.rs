@@ -855,7 +855,7 @@ mod tests {
         let original_plan = LogicalPlanBuilder::new()
             .scan(None, "t1".to_string())
             .limit(5)
-            .projection(col("c1"))
+            .projection(vec![col("c1")])
             .build();
 
         let memo = Memo::from(original_plan);
@@ -870,7 +870,7 @@ mod tests {
             let root_group_expr = &memo[root_group.logical_group_expr_ids()[0]];
             assert_eq!(
                 root_group_expr.key.operator,
-                Logical(LogicalProjection(ProjectionOp::new(col("c1"))))
+                Logical(LogicalProjection(ProjectionOp::new(vec![col("c1")])))
             );
 
             group_id = root_group_expr.inputs()[0];

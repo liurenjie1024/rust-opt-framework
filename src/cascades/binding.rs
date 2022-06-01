@@ -148,7 +148,7 @@ mod tests {
     fn test_bind_one() {
         let plan = LogicalPlanBuilder::new()
             .scan(None, "t1")
-            .projection(col("c1"))
+            .projection(vec![col("c1")])
             .limit(10)
             .build();
 
@@ -174,7 +174,7 @@ mod tests {
 
             assert_eq!(1, opt_expr.inputs().len());
             assert_eq!(
-                &Logical(LogicalProjection(Projection::new(col("c1")))),
+                &Logical(LogicalProjection(Projection::new(vec![col("c1")]))),
                 opt_expr[0].get_operator(&optimizer).unwrap()
             );
 
@@ -194,13 +194,13 @@ mod tests {
             let mut builder = LogicalPlanBuilder::new();
             let right = builder
                 .scan(None, "t2")
-                .projection(col("c2"))
+                .projection(vec![col("c2")])
                 .build()
                 .root();
 
             builder
                 .scan(None, "t1")
-                .projection(col("c1"))
+                .projection(vec![col("c1")] )
                 .limit(10)
                 .join(
                     JoinType::Inner,
