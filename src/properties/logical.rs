@@ -6,3 +6,9 @@ use datafusion::logical_plan::DFSchema;
 pub struct LogicalProperty {
     schema: Rc<DFSchema>,
 }
+
+impl LogicalProperty {
+    pub fn schema(&self) -> &DFSchema {
+        &self.schema
+    }
+}

@@ -14,6 +14,10 @@ impl Projection {
     pub fn new<I: IntoIterator<Item = Expr>>(exprs: I) -> Self {
         Self { expr: exprs.into_iter().collect() }
     }
+
+    pub fn expr(&self) -> &[Expr] {
+        &self.expr
+    }
 }
 
 impl PhysicalOperatorTrait for Projection {
