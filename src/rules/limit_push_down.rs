@@ -166,8 +166,12 @@ impl Rule for PushLimitToTableScanRule {
 
 #[cfg(test)]
 mod tests {
-
+    use std::sync::Arc;
+    use datafusion::arrow::datatypes::Schema;
+    use datafusion::catalog::schema::MemorySchemaProvider;
+    use datafusion::datasource::empty::EmptyTable;
     use datafusion::logical_expr::col;
+    use serde_json::Value;
 
     use crate::heuristic::{HepOptimizer, MatchOrder};
     use crate::optimizer::{Optimizer, OptimizerContext};
@@ -178,7 +182,44 @@ mod tests {
     };
 
     fn build_hep_optimizer(rules: Vec<RuleImpl>, plan: Plan) -> HepOptimizer {
-        HepOptimizer::new(MatchOrder::TopDown, 1000, rules, plan, OptimizerContext::default())
+        let schema = {
+            let json = r#"{
+                "fields": [
+                    {
+                        "name": "c1",
+                        "nullable": false,
+                        "type": {
+                            "name": "utf8"
+                        },
+                        "children": []
+                    },
+                    {
+                        "name": "c2",
+                        "nullable": false,
+                        "type": {
+                            "name": "utf8"
+                        },
+                        "children": []
+                    }
+                ],
+                "metadata": {}
+            }"#;
+            let value: Value = serde_json::from_str(json).unwrap();
+            let schema = Schema::from(&value).unwrap();
+            Arc::new(schema)
+        };
+
+        let table_provider = Arc::new(EmptyTable::new(Arc::new
+            ((&*schema).clone().into())));
+
+
+        let optimizer_context = OptimizerContext {
+            catalog: Arc::new(MemorySchemaProvider::new())
+        };
+
+        optimizer_context.catalog.register_table("t1".to_string(), table_provider.clone()).unwrap();
+
+        HepOptimizer::new(MatchOrder::TopDown, 1000, rules, plan, optimizer_context).unwrap()
     }
 
     #[test]
@@ -202,12 +243,22 @@ mod tests {
         );
 
         let optimized_plan = optimizer.find_best_plan().unwrap();
-        let expected_plan = LogicalPlanBuilder::new()
-            .scan(Some(5), "t1".to_string())
-            .projection(vec![col("c1")] )
-            .build();
+        let expected_plan = {
+            let raw_plan = LogicalPlanBuilder::new()
+                .scan(Some(5), "t1".to_string())
+                .projection(vec![col("c1")] )
+                .build();
 
-        assert_eq!(optimized_plan, expected_plan);
+            let optimizer = build_hep_optimizer(
+                vec![
+                ],
+                raw_plan,
+            );
+
+            optimizer.find_best_plan().unwrap()
+        };
+
+        assert_eq!(optimized_plan,  expected_plan);
     }
 
     #[test]

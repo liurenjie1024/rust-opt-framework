@@ -8,6 +8,7 @@ use crate::plan::Plan;
 use crate::properties::LogicalProperty;
 
 /// Context for optimization. Includes access to catalog, session variables.
+#[derive(Clone)]
 pub struct OptimizerContext {
     pub catalog: Arc<dyn SchemaProvider>
 }

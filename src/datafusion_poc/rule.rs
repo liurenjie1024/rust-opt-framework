@@ -18,6 +18,8 @@ use crate::rules::RuleImpl;
 pub struct DFOptimizerAdapterRule {
   /// Our rules
   rules: Vec<RuleImpl>,
+  /// Optimizer Context
+  optimizer_context: OptimizerContext,
 }
 
 impl OptimizerRule for DFOptimizerAdapterRule {
@@ -30,7 +32,8 @@ impl OptimizerRule for DFOptimizerAdapterRule {
 
     // Construct heuristic optimizer here
     let hep_optimizer = HepOptimizer::new(MatchOrder::TopDown, 1000, self.rules.clone(), plan,
-                                          OptimizerContext::default());
+                                          self.optimizer_context.clone())
+        .map_err(|e| DataFusionError::Plan(format!("{:?}", e)))?;
     let optimized_plan = hep_optimizer.find_best_plan()
         .map_err(|e| DataFusionError::Plan(format!("{:?}", e)))?;
 
@@ -47,6 +50,7 @@ impl OptimizerRule for DFOptimizerAdapterRule {
 mod tests {
   use std::sync::Arc;
   use datafusion::arrow::datatypes::Schema;
+  use datafusion::catalog::schema::MemorySchemaProvider;
   use datafusion::common::ToDFSchema;
   use datafusion::datasource::empty::EmptyTable;
   use datafusion::execution::context::ExecutionProps;
@@ -57,6 +61,7 @@ mod tests {
   use crate::datafusion_poc::rule::DFOptimizerAdapterRule;
   use crate::rules::{PushLimitOverProjectionRule, PushLimitToTableScanRule, RemoveLimitRule};
   use datafusion::logical_plan::plan::{TableScan as DFTableScan, DefaultTableSource};
+  use crate::optimizer::OptimizerContext;
 
   #[ignore]
   #[test]
@@ -88,12 +93,12 @@ mod tests {
       Arc::new(schema)
     };
 
+    let table_provider = Arc::new(EmptyTable::new(Arc::new
+        ((&*schema).clone().into())));
 
     // Construct datafusion logical plan
     let df_logical_plan = {
-      let source = Arc::new(DefaultTableSource::new(Arc::new(EmptyTable::new(Arc::new
-          ((&*schema).clone().into())))));
-
+      let source = Arc::new(DefaultTableSource::new(table_provider.clone()));
       let df_scan = DFTableScan {
         table_name: "t1".to_string(),
         source,
@@ -111,13 +116,21 @@ mod tests {
           .build().unwrap()
     };
 
+
     let optimized_plan = {
+      let optimizer_context = OptimizerContext {
+        catalog: Arc::new(MemorySchemaProvider::new())
+      };
+
+      optimizer_context.catalog.register_table("t1".to_string(), table_provider.clone()).unwrap();
+
       let rule = DFOptimizerAdapterRule {
         rules: vec![
           PushLimitOverProjectionRule::new().into(),
           RemoveLimitRule::new().into(),
           PushLimitToTableScanRule::new().into(),
-        ]
+        ],
+        optimizer_context,
       };
 
       rule.optimize(&df_logical_plan, &ExecutionProps::new()).unwrap()
