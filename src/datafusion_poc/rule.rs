@@ -63,7 +63,6 @@ mod tests {
   use datafusion::logical_plan::plan::{TableScan as DFTableScan, DefaultTableSource};
   use crate::optimizer::OptimizerContext;
 
-  #[ignore]
   #[test]
   fn test_limit_push_down() {
     let schema = {
