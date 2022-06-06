@@ -71,7 +71,7 @@ impl CascadesOptimizer {
             required_prop: PhysicalPropertySet::default(),
             rules: vec![],
             memo: Memo::from(plan),
-            context: OptimizerContext {},
+            context: OptimizerContext::default(),
         }
     }
 }
@@ -112,7 +112,7 @@ mod tests {
                 Scan2TableScanRule::new().into(),
             ],
             plan,
-            OptimizerContext {},
+            OptimizerContext::default(),
         );
 
         let expected_plan = {

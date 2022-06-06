@@ -1,11 +1,24 @@
 use std::fmt::Debug;
+use std::sync::Arc;
+use datafusion::catalog::schema::{MemorySchemaProvider, SchemaProvider};
 
 use crate::error::OptResult;
 use crate::operator::Operator;
 use crate::plan::Plan;
+use crate::properties::LogicalProperty;
 
 /// Context for optimization. Includes access to catalog, session variables.
-pub struct OptimizerContext {}
+pub struct OptimizerContext {
+    pub catalog: Arc<dyn SchemaProvider>
+}
+
+impl Default for OptimizerContext {
+    fn default() -> Self {
+        Self {
+            catalog: Arc::new(MemorySchemaProvider::default())
+        }
+    }
+}
 
 /// Optimizer interface.
 ///
@@ -40,7 +53,9 @@ pub trait OptExpr {
     fn input_at(&self, idx: usize, opt: &Self::O) -> Self::InputHandle;
 }
 
-pub trait OptGroup {}
+pub trait OptGroup {
+    fn logical_prop(&self) -> &LogicalProperty;
+}
 
 pub trait OptExprHandle: Clone + Debug {
     type O: Optimizer<ExprHandle = Self>;

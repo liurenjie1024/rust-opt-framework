@@ -549,7 +549,11 @@ impl IndexMut<GroupExprId> for Group {
     }
 }
 
-impl OptGroup for Group {}
+impl OptGroup for Group {
+    fn logical_prop(&self) -> &LogicalProperty {
+        todo!()
+    }
+}
 
 impl Group {
     fn new(group_id: GroupId) -> Self {

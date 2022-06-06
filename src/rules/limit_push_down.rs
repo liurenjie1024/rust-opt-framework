@@ -178,7 +178,7 @@ mod tests {
     };
 
     fn build_hep_optimizer(rules: Vec<RuleImpl>, plan: Plan) -> HepOptimizer {
-        HepOptimizer::new(MatchOrder::TopDown, 1000, rules, plan, OptimizerContext {})
+        HepOptimizer::new(MatchOrder::TopDown, 1000, rules, plan, OptimizerContext::default())
     }
 
     #[test]

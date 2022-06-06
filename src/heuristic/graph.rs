@@ -212,7 +212,11 @@ impl<'a> From<&'a PlanNode> for HepOptimizerNode {
     }
 }
 
-impl OptGroup for HepOptimizerNode {}
+impl OptGroup for HepOptimizerNode {
+    fn logical_prop(&self) -> &LogicalProperty {
+        todo!()
+    }
+}
 
 impl OptExpr for HepOptimizerNode {
     type InputHandle = HepNodeId;

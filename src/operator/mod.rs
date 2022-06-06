@@ -19,8 +19,10 @@ pub use join::*;
 pub use physical::*;
 
 use crate::error::OptResult;
+use crate::operator::Operator::{Logical, Physical};
 use crate::optimizer::Optimizer;
 use crate::properties::LogicalProperty;
+use enum_dispatch::enum_dispatch;
 
 #[derive(Clone, Debug, Hash, Eq, PartialEq, EnumAsInner)]
 pub enum Operator {
@@ -28,6 +30,7 @@ pub enum Operator {
     Physical(PhysicalOperator),
 }
 
+#[enum_dispatch(LogicalOperator, PhysicalOperator)]
 pub trait OperatorTrait {
     fn derive_logical_prop<O: Optimizer>(
         &self,
@@ -42,6 +45,9 @@ impl OperatorTrait for Operator {
         _handle: O::ExprHandle,
         _optimizer: &O,
     ) -> OptResult<LogicalProperty> {
-        todo!()
+        match self {
+            Logical(op) => op.derive_logical_prop(_handle, _optimizer),
+            Physical(op) => op.derive_logical_prop(_handle, _optimizer)
+        }
     }
 }

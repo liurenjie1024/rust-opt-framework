@@ -140,7 +140,7 @@ mod tests {
             required_prop: PhysicalPropertySet::default(),
             rules: vec![],
             memo: Memo::from(plan),
-            context: OptimizerContext {},
+            context: OptimizerContext::default(),
         }
     }
 

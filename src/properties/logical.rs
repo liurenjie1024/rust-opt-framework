@@ -8,6 +8,12 @@ pub struct LogicalProperty {
 }
 
 impl LogicalProperty {
+    pub fn new(schema: DFSchema) -> Self {
+        Self {
+            schema: Rc::new(schema)
+        }
+    }
+
     pub fn schema(&self) -> &DFSchema {
         &self.schema
     }

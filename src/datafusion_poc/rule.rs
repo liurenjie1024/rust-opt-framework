@@ -30,7 +30,7 @@ impl OptimizerRule for DFOptimizerAdapterRule {
 
     // Construct heuristic optimizer here
     let hep_optimizer = HepOptimizer::new(MatchOrder::TopDown, 1000, self.rules.clone(), plan,
-                                          OptimizerContext {});
+                                          OptimizerContext::default());
     let optimized_plan = hep_optimizer.find_best_plan()
         .map_err(|e| DataFusionError::Plan(format!("{:?}", e)))?;
 
