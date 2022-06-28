@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 use std::mem::swap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 
 use crate::properties::{LogicalProperty, PhysicalPropertySet};
@@ -14,7 +14,7 @@ use crate::operator::Operator;
 
 pub type PlanNodeId = u32;
 
-pub type PlanNodeRef = Rc<PlanNode>;
+pub type PlanNodeRef = Arc<PlanNode>;
 
 pub struct PlanNodeIdGen {
     next: PlanNodeId

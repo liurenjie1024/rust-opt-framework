@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 use datafusion::prelude::{Expr, JoinType};
 use crate::operator::LogicalOperator::{LogicalJoin, LogicalProjection, LogicalScan};
 use crate::operator::Operator::Logical;
@@ -33,7 +33,7 @@ impl LogicalPlanBuilder {
             Some(l) => TableScan::with_limit(table_name.into(), l),
             None => TableScan::new(table_name.into()),
         };
-        let plan_node = Rc::new(PlanNode::new(
+        let plan_node = Arc::new(PlanNode::new(
             self.next_plan_node_id,
             Logical(LogicalScan(table_scan)),
             vec![],
@@ -44,7 +44,7 @@ impl LogicalPlanBuilder {
 
     pub fn projection<I: IntoIterator<Item = Expr>>(&mut self, exprs: I) -> &mut Self {
         let projection = Projection::new(exprs);
-        let plan_node = Rc::new(PlanNode::new(
+        let plan_node = Arc::new(PlanNode::new(
             self.next_plan_node_id,
             Logical(LogicalProjection(projection)),
             vec![self.root.clone().unwrap()],
@@ -55,7 +55,7 @@ impl LogicalPlanBuilder {
 
     pub fn limit(&mut self, limit: usize) -> &mut Self {
         let limit = Limit::new(limit);
-        let plan_node = Rc::new(PlanNode::new(
+        let plan_node = Arc::new(PlanNode::new(
             self.next_plan_node_id,
             Logical(LogicalOperator::LogicalLimit(limit)),
             vec![self.root.clone().unwrap()],
@@ -71,7 +71,7 @@ impl LogicalPlanBuilder {
         right: PlanNodeRef,
     ) -> &mut Self {
         let join = Join::new(join_type, condition);
-        let plan_node = Rc::new(PlanNode::new(
+        let plan_node = Arc::new(PlanNode::new(
             self.next_plan_node_id,
             Logical(LogicalJoin(join)),
             vec![self.root.clone().unwrap(), right],

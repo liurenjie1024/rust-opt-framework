@@ -1,16 +1,16 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use datafusion::logical_plan::DFSchema;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct LogicalProperty {
-    schema: Rc<DFSchema>,
+    schema: Arc<DFSchema>,
 }
 
 impl LogicalProperty {
     pub fn new(schema: DFSchema) -> Self {
         Self {
-            schema: Rc::new(schema)
+            schema: Arc::new(schema)
         }
     }
 

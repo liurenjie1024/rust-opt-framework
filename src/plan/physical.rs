@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 use datafusion::logical_plan::JoinType;
 use datafusion::prelude::Expr;
 use crate::operator::Operator::Physical;
@@ -22,7 +22,7 @@ impl PhysicalPlanBuilder {
             Some(l) => TableScan::with_limit(table_name, l),
             None => TableScan::new(table_name.into()),
         };
-        let plan_node = Rc::new(PlanNode::new(
+        let plan_node = Arc::new(PlanNode::new(
             0,
             Physical(PhysicalTableScan(table_scan)),
             vec![],
@@ -41,7 +41,7 @@ impl PhysicalPlanBuilder {
         right: PlanNodeRef,
     ) -> Self {
         let join = Join::new(join_type, condition);
-        let plan_node = Rc::new(PlanNode::new(
+        let plan_node = Arc::new(PlanNode::new(
             self.next_plan_node_id,
             Physical(PhysicalHashJoin(join)),
             vec![self.root.clone(), right],

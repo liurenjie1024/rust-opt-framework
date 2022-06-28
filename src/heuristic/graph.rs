@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use std::rc::Rc;
+use std::sync::Arc;
 
 use petgraph::prelude::{NodeIndex, StableGraph};
 use petgraph::visit::Bfs;
@@ -88,7 +88,7 @@ impl PlanGraph {
                 .with_physical_props(node.physical_props.clone())
                 .add_inputs(inputs)
                 .build();
-            hep_node_id_to_plan_node.insert(node_id, Rc::new(plan_node));
+            hep_node_id_to_plan_node.insert(node_id, Arc::new(plan_node));
         }
 
         hep_node_id_to_plan_node

@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 datafusion = {git = "https://github.com/liurenjie1024/arrow-datafusion.git", branch = "renjie/opt_test"}
+datafusion-physical-expr = {git = "https://github.com/liurenjie1024/arrow-datafusion.git", branch = "renjie/opt_test"}
 thiserror = "1"
 enum_dispatch = "0.3"
 log = "^0.4"
@@ -19,6 +20,9 @@ prettytable-rs = "^0.8"
 lazy_static = "1"
 strum = "0.24"
 strum_macros = "0.24"
+async-trait = "0.1.41"
+futures = "0.3"
+
 
 [dev-dependencies]
 serde = "1.0"

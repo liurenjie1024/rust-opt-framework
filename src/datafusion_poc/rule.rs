@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 use datafusion::common::DataFusionError;
 use datafusion::execution::context::ExecutionProps;
 use datafusion::logical_expr::LogicalPlan;
@@ -26,7 +26,7 @@ impl OptimizerRule for DFOptimizerAdapterRule {
   fn optimize(&self, df_plan: &LogicalPlan, _execution_props: &ExecutionProps) ->
   datafusion::common::Result<LogicalPlan> {
     println!("Beginning to execute heuristic optimizer");
-    let plan = Plan::new(Rc::new(PlanNode::try_from(df_plan)
+    let plan = Plan::new(Arc::new(PlanNode::try_from(df_plan)
         .map_err(|e| DataFusionError::Plan(format!("{:?}", e)))?
     ));
 

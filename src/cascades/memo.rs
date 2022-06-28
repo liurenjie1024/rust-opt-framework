@@ -7,6 +7,7 @@ use std::hash::Hash;
 use std::mem::swap;
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
+use std::sync::Arc;
 
 use enumset::EnumSet;
 use itertools::Itertools;
@@ -684,7 +685,7 @@ impl Group {
                 })
                 .try_collect()?;
 
-            Ok(Rc::new(PlanNode::new(
+            Ok(Arc::new(PlanNode::new(
                 plan_node_id,
                 best_group_expr.key.operator.clone(),
                 input_plans,
