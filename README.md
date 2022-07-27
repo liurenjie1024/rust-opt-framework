@@ -1,3 +1,5 @@
+# This project has been donated to [datafusion-contrib/datafusion-dolomite](https://github.com/datafusion-contrib/datafusion-dolomite), and this repo will not be maintained.
+
 An extensible query optimization framework written in rust. For detail design notes, please refer to [src/lib.rs](src/lib.rs).
 
 # Example
